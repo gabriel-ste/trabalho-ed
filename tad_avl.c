@@ -100,12 +100,12 @@ pNodoA* Caso1 (pNodoA *a, int *ok)
     ptu = a->esq;
     if (ptu->FB == 1)
     {
-        printf("fazendo rotacao direita em %d\n",a->info);
+       // printf("fazendo rotacao direita em %d\n",a->info);
         a = rotacao_direita(a);
     }
     else
     {
-        printf("fazendo rotacao dupla direita em %d\n",a->info);
+      //  printf("fazendo rotacao dupla direita em %d\n",a->info);
         a = rotacao_dupla_direita(a);
     }
     a->FB = 0;
@@ -119,12 +119,12 @@ pNodoA* Caso2 (pNodoA *a, int *ok)
     ptu = a->dir;
     if (ptu->FB == -1)
     {
-        printf("fazendo rotacao esquerda em %d\n",a->info);
+        //printf("fazendo rotacao esquerda em %d\n",a->info);
         a=rotacao_esquerda(a);
     }
     else
     {
-        printf("fazendo rotacao dupla esquerda em %d\n",a->info);
+        //printf("fazendo rotacao dupla esquerda em %d\n",a->info);
         a=rotacao_dupla_esquerda(a);
     }
     a->FB = 0;
@@ -155,16 +155,16 @@ pNodoA* InsereAVL (pNodoA *a, TipoInfo x, int *ok)
         a->esq = InsereAVL(a->esq,x,ok);
         if (*ok)
         {
-            switch (a->FB)
+            switch (a->FB)  // testa o valor do fator da raiz da subárvore onde o nodo foi inserido a esquerda
             {
-            case -1:
+            case -1:            // faz as devidas correções dos fatores
                 a->FB = 0;
                 *ok = 0;
                 break;
             case 0:
                 a->FB = 1;
                 break;
-            case 1:
+            case 1:         // se era 1 e foi inserido na esquerda, virou +2. Logo, vamos precisar de rotação:
                 a = (pNodoA*) Caso1(a,ok);
                 break;
             }
@@ -175,16 +175,16 @@ pNodoA* InsereAVL (pNodoA *a, TipoInfo x, int *ok)
         a->dir = InsereAVL(a->dir,x,ok);
         if (*ok)
         {
-            switch (a->FB)
+            switch (a->FB) // testa o valor do fator da raiz da subárvore onde o nodo foi inserido a direita
             {
-            case 1:
+            case 1:              // cases fazem as devidas correções dos fatores
                 a->FB = 0;
                 *ok = 0;
                 break;
             case 0:
                 a->FB = -1;
                 break;
-            case -1:
+            case -1:    // se era -1 e foi inserido na direita, virou -2. Logo, vamos precisar de rotação;
                 a = (pNodoA *) Caso2(a,ok);
                 break;
             }
@@ -259,23 +259,24 @@ void caminhamento_preFixado_esq_barras(pNodoA *a, int nivel)
 // end of plot functions
 
 
+// main for testing:
 int main()
 {
-    int *ok;
+    int *flag;
 
     pNodoA *a;
     a = inicializa();
-    a = InsereAVL(a,10,ok);
-    a = InsereAVL(a,2,ok);
-    a = InsereAVL(a,3,ok);
-    a = InsereAVL(a,11,ok);
-    a = InsereAVL(a,20,ok);
-    a = InsereAVL(a,31,ok);
-    a = InsereAVL(a,58,ok);
-    a = InsereAVL(a,37,ok);
-    a = InsereAVL(a,34,ok);
-    a = InsereAVL(a,25,ok);
-    a = InsereAVL(a,0,ok);
+    a = InsereAVL(a,10,flag);
+    a = InsereAVL(a,2,flag);
+    a = InsereAVL(a,3,flag);
+    a = InsereAVL(a,11,flag);
+    a = InsereAVL(a,20,flag);
+    a = InsereAVL(a,31,flag);
+    a = InsereAVL(a,58,flag);
+    a = InsereAVL(a,37,flag);
+    a = InsereAVL(a,34,flag);
+    a = InsereAVL(a,25,flag);
+    a = InsereAVL(a,0,flag);
 
     caminhamento_preFixado_esq_barras(a,0);
 
