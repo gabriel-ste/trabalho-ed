@@ -153,7 +153,7 @@ pNodoA* InsereAVL (pNodoA *a, TipoInfo x, int *ok)
     else if (x < a->info)
     {
         a->esq = InsereAVL(a->esq,x,ok);
-        if (*ok)
+        if (*ok)    // se a é null, vamos inserir
         {
             switch (a->FB)  // testa o valor do fator da raiz da subárvore onde o nodo foi inserido a esquerda
             {
@@ -192,6 +192,82 @@ pNodoA* InsereAVL (pNodoA *a, TipoInfo x, int *ok)
     }
     return a;
 }
+
+
+/*
+    Aux function to determinate the smaller element from a tree
+*/
+
+
+TipoInfo menorDosMaiores(pNodoA *a)
+{
+    TipoInfo ret = 0;
+
+    while (a && (a->dir || a->esq)) // enquanto não for nulo ou não for folha
+    {
+        ret = a->info;
+        a = a->esq;
+    }
+
+    return ret;
+
+
+
+}
+
+
+
+/*
+    Function used to delete a node from an AVL tree
+*/
+
+pNodoA* DeletaAVL (pNodoA *a, TipoInfo key)
+{
+    //se a árvore for vazia, retorna a própria árvore
+    if(!a)
+        return a;
+    //  se a chave a ser deletada for menor que a chave do nodo a
+    //  vamos fazer a busca na subárvore esquerda
+    if(key<a->info)
+        a->esq = DeletaAVL(a,key);
+
+    //  se a chave a ser deletada for maior que a chave do nodo a
+    //  vamos fazer a busca na subárvore direita
+    if(key>a->info)
+        a->dir = DeletaAVL(a,key);
+
+    // se a chave tiver o mesmo valor que o nodo, devemos deletar esse nodo.
+    else
+    {
+        // nodo possui apenas um filho ou nenhum
+
+        if((!a->dir) || (!a->esq))
+        {
+            struct pNodoA *temp;
+            temp= a->esq ? a->dir : a->dir;
+
+            // Caso não tenha filho
+            if(!temp)
+            {
+                temp = a;
+                a = NULL;
+            }
+            else
+                *a = *temp; // copia o valor do filho existente
+                free(temp);
+
+        }
+        else // nodo possui dois filhos
+        {
+            // Pegar o menor da árvore à direita
+           // struct nodo* temp =
+        }
+    }
+
+
+}
+
+
 
 /*
     The following functions are the in the pattern to print nodes of binary trees.
