@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 typedef int TipoInfo;
 
@@ -193,23 +194,52 @@ pNodoA* InsereAVL (pNodoA *a, TipoInfo x, int *ok)
     return a;
 }
 
+/* function to calculate the tree high*/
+
+int altura(pNodoA *a)
+{
+    int dir=0,esq=0;    // aux variables to determinate the factor value
+    if(!a)
+        return 0;
+    esq = fator (a->esq) +1;
+    dir = fator (a->dir) +1;
+
+    if(esq>dir)
+        return esq;
+    return dir;
+}
+
 
 /*
-    Aux function to determinate the smaller element from a tree
+    Aux function to determinate the smallest element from a tree
+*/
+
+int fator(pNodoA *a)
+{
+    int dir=0,esq=0;    // aux variables to determinate the factor value
+    if(!a)
+        return 0;
+    return abs(altura(a->esq))-abs(altura(a-dir));
+}
+
+
+
+/*
+    Aux function to determinate the smallest element from a tree
 */
 
 
-TipoInfo menorDosMaiores(pNodoA *a)
+pNodoA* menorDosMaiores(pNodoA *a)
 {
-    TipoInfo ret = 0;
+    if (!a)
+        return NULL;
 
-    while (a && (a->dir || a->esq)) // enquanto não for nulo ou não for folha
+    while (a && (a->esq)) // enquanto não for nulo ou não for folha
     {
-        ret = a->info;
         a = a->esq;
     }
 
-    return ret;
+    return a;
 
 
 
@@ -223,18 +253,20 @@ TipoInfo menorDosMaiores(pNodoA *a)
 
 pNodoA* DeletaAVL (pNodoA *a, TipoInfo key)
 {
+    pNodoA *temp = NULL;
+    pNodoA *temp2 = NULL;
     //se a árvore for vazia, retorna a própria árvore
     if(!a)
         return a;
     //  se a chave a ser deletada for menor que a chave do nodo a
     //  vamos fazer a busca na subárvore esquerda
     if(key<a->info)
-        a->esq = DeletaAVL(a,key);
+        a->esq = DeletaAVL(a->esq,key);
 
     //  se a chave a ser deletada for maior que a chave do nodo a
     //  vamos fazer a busca na subárvore direita
     if(key>a->info)
-        a->dir = DeletaAVL(a,key);
+        a->dir = DeletaAVL(a->dir,key);
 
     // se a chave tiver o mesmo valor que o nodo, devemos deletar esse nodo.
     else
@@ -243,24 +275,35 @@ pNodoA* DeletaAVL (pNodoA *a, TipoInfo key)
 
         if((!a->dir) || (!a->esq))
         {
-            struct pNodoA *temp;
-            temp= a->esq ? a->dir : a->dir;
-
+            if(a->dir)      // caso tenhamos um filho, copiaremos o valor do filho existente
+                *temp=*(a->dir);
+            if(a->esq)
+                *temp=*(a->esq);
             // Caso não tenha filho
             if(!temp)
             {
-                temp = a;
+                //vai deletar o a de boas
                 a = NULL;
+                free(a);
             }
             else
+            {
+                printf("opan");
                 *a = *temp; // copia o valor do filho existente
-                free(temp);
+
+            }
+
 
         }
         else // nodo possui dois filhos
         {
-            // Pegar o menor da árvore à direita
-           // struct nodo* temp =
+            // Pegar o maior nodo da árvore à esq
+            *temp = *a;
+            temp2 = (pNodoA *) menorDosMaiores(a);
+            *a = *temp2;
+            a->dir = temp->dir;
+            a->esq = temp->esq;
+
         }
     }
 
@@ -343,17 +386,12 @@ int main()
     pNodoA *a;
     a = inicializa();
     a = InsereAVL(a,10,flag);
-    a = InsereAVL(a,2,flag);
-    a = InsereAVL(a,3,flag);
     a = InsereAVL(a,11,flag);
-    a = InsereAVL(a,20,flag);
-    a = InsereAVL(a,31,flag);
-    a = InsereAVL(a,58,flag);
-    a = InsereAVL(a,37,flag);
-    a = InsereAVL(a,34,flag);
-    a = InsereAVL(a,25,flag);
-    a = InsereAVL(a,0,flag);
-
     caminhamento_preFixado_esq_barras(a,0);
 
+    a = DeletaAVL(a,10);
+    caminhamento_preFixado_esq_barras(a,0);
+
+
+      printf("\n\n%d \n\n", fator(a));
 }
