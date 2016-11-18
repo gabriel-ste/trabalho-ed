@@ -101,12 +101,12 @@ pNodoA* Caso1 (pNodoA *a, int *ok)
     ptu = a->esq;
     if (ptu->FB == 1)
     {
-       // printf("fazendo rotacao direita em %d\n",a->info);
+        // printf("fazendo rotacao direita em %d\n",a->info);
         a = rotacao_direita(a);
     }
     else
     {
-      //  printf("fazendo rotacao dupla direita em %d\n",a->info);
+        //  printf("fazendo rotacao dupla direita em %d\n",a->info);
         a = rotacao_dupla_direita(a);
     }
     a->FB = 0;
@@ -198,15 +198,20 @@ pNodoA* InsereAVL (pNodoA *a, TipoInfo x, int *ok)
 
 int altura(pNodoA *a)
 {
-    int dir=0,esq=0;    // aux variables to determinate the factor value
-    if(!a)
+    // aux variables to determinate the factor value
+    if(a==NULL)
         return 0;
-    esq = fator (a->esq) +1;
-    dir = fator (a->dir) +1;
+    else
+    {
+        int esq = altura (a->esq);
+        int dir= altura (a->dir);
 
-    if(esq>dir)
-        return esq;
-    return dir;
+        if(esq>dir)
+            return esq+1;
+        return dir+1;
+
+    }
+
 }
 
 
@@ -219,7 +224,7 @@ int fator(pNodoA *a)
     int dir=0,esq=0;    // aux variables to determinate the factor value
     if(!a)
         return 0;
-    return abs(altura(a->esq))-abs(altura(a-dir));
+    return abs(altura(a->esq))-abs(altura(a->dir));
 }
 
 
@@ -229,20 +234,17 @@ int fator(pNodoA *a)
 */
 
 
-pNodoA* menorDosMaiores(pNodoA *a)
+pNodoA* maiorDosMenores(pNodoA *a)
 {
     if (!a)
         return NULL;
 
-    while (a && (a->esq)) // enquanto não for nulo ou não for folha
+    while (a && (a->dir)) // enquanto não for nulo ou não for folha
     {
-        a = a->esq;
+        a = a->dir;
     }
 
     return a;
-
-
-
 }
 
 
@@ -253,61 +255,71 @@ pNodoA* menorDosMaiores(pNodoA *a)
 
 pNodoA* DeletaAVL (pNodoA *a, TipoInfo key)
 {
-    pNodoA *temp = NULL;
-    pNodoA *temp2 = NULL;
-    //se a árvore for vazia, retorna a própria árvore
+
+    // caso base
     if(!a)
         return a;
+
+    printf("\nlog: info = %d", a->info);
     //  se a chave a ser deletada for menor que a chave do nodo a
     //  vamos fazer a busca na subárvore esquerda
-    if(key<a->info)
+    if(key < a->info)
         a->esq = DeletaAVL(a->esq,key);
 
     //  se a chave a ser deletada for maior que a chave do nodo a
     //  vamos fazer a busca na subárvore direita
-    if(key>a->info)
+    if(key > a->info)
         a->dir = DeletaAVL(a->dir,key);
 
     // se a chave tiver o mesmo valor que o nodo, devemos deletar esse nodo.
     else
     {
-        // nodo possui apenas um filho ou nenhum
-
-        if((!a->dir) || (!a->esq))
+        if(key == a->info)
         {
-            if(a->dir)      // caso tenhamos um filho, copiaremos o valor do filho existente
-                *temp=*(a->dir);
-            if(a->esq)
-                *temp=*(a->esq);
-            // Caso não tenha filho
-            if(!temp)
+            if((a->esq == NULL))      // caso tenhamos um filho, copiaremos o valor do filho existente
             {
-                //vai deletar o a de boas
-                a = NULL;
+                struct pNodoA *temp;
+                temp = a->dir;
                 free(a);
+                return temp;
             }
-            else
+            if((a->dir == NULL))
             {
-                printf("opan");
-                *a = *temp; // copia o valor do filho existente
-
+                struct pNodoA *temp;
+                temp = a->esq;
+                free(a);
+                return temp;
             }
 
+            else // nodo possui dois filhos
+            {
+                a->info = maiorDosMenores(a->esq)->info;
+                a->esq = DeletaAVL(a->esq,maiorDosMenores(a->esq)->info);
 
-        }
-        else // nodo possui dois filhos
-        {
-            // Pegar o maior nodo da árvore à esq
-            *temp = *a;
-            temp2 = (pNodoA *) menorDosMaiores(a);
-            *a = *temp2;
-            a->dir = temp->dir;
-            a->esq = temp->esq;
 
+            }
         }
+
+
+    }
+    a->FB = fator(a); // atualiza os fatores da função no sentido folhas -> raiz
+
+    if (a->FB > 1) // se o fator do nodo for +2
+    {
+        if(a->esq->FB>0) // analisa o fator do nodo a esquerda, caso positivo ROTAÇÃO A DIREITA
+            a = rotacao_direita(a);
+        else
+            a = rotacao_dupla_direita(a);
+    }
+    if (a->FB < -1) // se o fator do nodo for +2
+    {
+        if(a->dir->FB>0) // analisa o fator do nodo a esquerda, caso positivo ROTAÇÃO A DIREITA
+            a = rotacao_dupla_esquerda(a);
+        else
+            a = rotacao_esquerda(a);
     }
 
-
+    return a;
 }
 
 
@@ -367,7 +379,7 @@ void caminhamento_preFixado_esq_barras(pNodoA *a, int nivel)
     {
         for(i=0; i<=nivel; i++)
             printf("=");
-        printf("%d\n",a->info);
+        printf("%d  - FB= %d| FB2= %d | H= %d\n",a->info,a->FB,fator(a),altura(a));
         nivel ++;
         caminhamento_preFixado_esq_barras(a->esq,nivel);
         caminhamento_preFixado_esq_barras(a->dir,nivel);
@@ -384,14 +396,27 @@ int main()
     int *flag;
 
     pNodoA *a;
+
+    printf("******** Arvore original: \n");
     a = inicializa();
-    a = InsereAVL(a,10,flag);
-    a = InsereAVL(a,11,flag);
+    a = InsereAVL(a,90,flag);
+    a = InsereAVL(a,15,flag);
+    a = InsereAVL(a,16,flag);
+    a = InsereAVL(a,27,flag);
+    a = InsereAVL(a,20,flag);
+    a = InsereAVL(a,1,flag);
+    a = InsereAVL(a,0,flag);
+    a = InsereAVL(a,195,flag);
+    a = InsereAVL(a,100,flag);
+    a = InsereAVL(a,86,flag);
+
     caminhamento_preFixado_esq_barras(a,0);
 
-    a = DeletaAVL(a,10);
+    a = DeletaAVL(a,195);
+    printf("\n");
+    printf("******** Arvore apos deletamento: \n");
     caminhamento_preFixado_esq_barras(a,0);
 
 
-      printf("\n\n%d \n\n", fator(a));
+    printf("\n\n%d \n\n", fator(a));
 }
